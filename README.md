@@ -1,86 +1,25 @@
-# Comfy UI Kokoro
+# ComfyUI Kokoro (Remote-Only)
 
-<a href="https://www.buymeacoffee.com/stavsapq" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="40" width="174"></a>
+Remote-only Kokoro TTS nodes for ComfyUI that call a hosted Kokoro server over HTTP.
+No ONNX downloads. Same nodes/UX as the original: **Kokoro Speaker**, **Kokoro Speaker Combiner**, **Kokoro Generator**.
 
-<img src="https://img.shields.io/badge/v1.0-green.svg?style=for-the-badge&labelColor=gray&label=Kokoro&color=blue" alt=""/>
-<img src="https://img.shields.io/badge/0.4.2-green.svg?style=for-the-badge&labelColor=gray&label=Kokoro-onnx&color=blue" alt=""/>
-
-Kokoro TTS nodes, wrapping this [kokoro onnx](https://github.com/thewh1teagle/kokoro-onnx) that is based on [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M).
-
-![workflow.png](.meta/workflow.png)
-
-**note**: This picture is also a workflow, just download and drop it into comfy.
+## Features
+- Text → AUDIO tensor (44.1 kHz default) for **PreviewAudio** / **SaveAudio (.flac + metadata)** / lip-sync / Infinite Talk chains
+- Supports Basic Auth (Traefik) or Bearer
+- Voice mixing: `speaker_a + speaker_b` (optionally pass weights if your server supports it)
+- Languages and speed forwarded to the API (ignored safely if unsupported)
 
 ## Install
+1. Clone into `ComfyUI/custom_nodes/comfyui-kokoro-remote`
+2. `pip install -r requirements.txt`
+3. Create `.env` in the repo:
+   ```env
+   KOKORO_BASE_URL=https://tts.example.com
+   KOKORO_USERNAME=admin
+   KOKORO_PASSWORD=secret
+   KOKORO_TIMEOUT=60
+   KOKORO_SAMPLE_RATE=44100
 
-Install Via ComfyUI Manager, by `stavsap`.
-
-![img.png](.meta/img.png)
-
-Or
-
-Clone the repo into `custom_nodes` folder
-
-```shell
-git clone https://github.com/stavsap/comfyui-kokoro.git
-```
-
-Then cd into `comfyui-kokoro`, and install requirements.
-
-```shell
-pip install -r requirements.txt 
-```
-And finally reboot Comfy.
-
-The onnx model and speakers meta-data will be automatically downloaded on the first run.
-
-If using windows portable version and experience issues with dependencies, check the following:
-
-[![IMAGE ALT TEXT HERE](.meta/yt_img.png)](https://youtu.be/O6qYvUN7vIc?si=loCoMD5ou2eeGL30)
-
-## Nodes
-
-Currently, there are 3 nodes that can be combined for TTS workflow.
-
-### Kokoro Speaker
-
-![speaker.png](.meta/speaker.png)
-
-Select supported speakers.
-
-### Kokoro Speaker Combiner
-
-![speaker_combiner.png](.meta/speaker_combiner.png)
-
-Combiner node to combine 2 given speakers to new speaker.
-
-- **weight**: [1, 0], select the weight of `speaker a`.
-
-Example:
-
-`weight == 0.7` will result in strength of 70% of `speaker_a` and 30% of `speaker_b`.
-
-
-### Kokoro Generate
-
-![generator.png](.meta/generator.png)
-
-- **speaker**: input a speaker
-- **speed**: set the speach speed.
-- **lang**: set the language, what ever is supported by kokoro.
-
-
-## Available Voices
-
-All supported voices can be found [here](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md).
-
-## Use Cases:
-
-1. TTS: Text To Speach, generate voice from test.
-
-2. Lip Sync: sync lips of videos
-
-![lipsync.png](.meta/lipsync.png)
 
 ## License
 

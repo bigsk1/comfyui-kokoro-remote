@@ -1,0 +1,43 @@
+{
+    "1": {
+      "class_type": "KokoroSpeaker",
+      "inputs": { "speaker_name": "af_jessica" }
+    },
+    "2": {
+      "class_type": "KokoroSpeaker",
+      "inputs": { "speaker_name": "af_sky" }
+    },
+    "3": {
+      "class_type": "KokoroSpeakerCombiner",
+      "inputs": {
+        "speaker_a": [ "1", 0 ],
+        "speaker_b": [ "2", 0 ],
+        "weight": 0.50
+      }
+    },
+    "4": {
+      "class_type": "KokoroGenerator",
+      "inputs": {
+        "text": "i am now going to show you how to install comfy ui, its very simple and fast.",
+        "speaker": [ "3", 0 ],
+        "speed": 0.88,
+        "lang": "English",
+        "base_url": "",      
+        "timeout_s": 60,
+        "target_sample_rate": 44100,
+        "supports_weights": false
+      }
+    },
+    "5": {
+      "class_type": "PreviewAudio",
+      "inputs": { "audio": [ "4", 0 ] }
+    },
+    "6": {
+      "class_type": "SaveAudio",
+      "inputs": {
+        "audio": [ "4", 0 ],
+        "filename_prefix": "kokoro_demo",
+        "extension": "flac"
+      }
+    }
+  }

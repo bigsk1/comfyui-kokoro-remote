@@ -173,3 +173,4 @@ cython_debug/
 kokoro-v0_19.onnx
 voices.json
 voices.bin
+tts_test.wav
