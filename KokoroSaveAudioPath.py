@@ -17,7 +17,7 @@ class SaveAudioPathWAV:
     RETURN_TYPES = ("AUDIO", "STRING")
     RETURN_NAMES = ("audio", "audio_path")
     FUNCTION = "save"
-    OUTPUT_NODE = False
+    OUTPUT_NODE = True
     CATEGORY = "kokoro"
 
 

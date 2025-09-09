@@ -29,13 +29,6 @@
       }
     },
     "5": {
-      "class_type": "StringGate",
-      "inputs": {
-        "text": ["4", 1],
-        "enabled": false
-      }
-    },
-    "6": {
       "class_type": "SaveAudio",
       "inputs": {
         "audio": ["2", 0],
@@ -43,4 +36,3 @@
       }
     }
   }
-  
