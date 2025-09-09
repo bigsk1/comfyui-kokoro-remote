@@ -218,6 +218,10 @@ def _encode_weighted_voice(voice: str, weight_a: float) -> str:
     return f"{va}({a})+{vb}({b})"
 
 class KokoroSpeaker:
+    DESCRIPTION = (
+        "Choose a single voice. Use Kokoro Speaker Combiner to blend two voices."
+    )
+
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -239,6 +243,13 @@ class KokoroSpeaker:
         return hash(speaker_name)
 
 class KokoroSpeakerCombiner:
+    DESCRIPTION = (
+        "Blend two voices.\n"
+        "• weight=1.0 → only A, weight=0.0 → only B.\n"
+        "• Middle values encode a ratio for servers that support it (e.g., af_a(2)+af_b(1)).\n"
+        "Avoid cross-language mixes (e.g., English+Mandarin)."
+    )
+    
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -275,6 +286,15 @@ class KokoroSpeakerCombiner:
         return hash((va, vb, float(weight)))
 
 class KokoroGenerator:
+    DESCRIPTION = (
+        "Remote Kokoro TTS generator (HTTP).\n"
+        "• Preview: click ▶ on a PreviewAudio node wired to this output to audition voices.\n"
+        "• Commit: run SaveAudioPath (WAV) to write a file, then run your full workflow.\n"
+        "• Mixing: weight=1 → only A, weight=0 → only B, middle → A+B (uses ratio string like af_a(2)+af_b(1)).\n"
+        "• Tip: American+British mix is OK; avoid cross-language mixes (e.g. English+Mandarin) unless your server supports it.\n"
+        "• Auth/Base URL can come from .env (KOKORO_BASE_URL, KOKORO_USERNAME/PASSWORD or KOKORO_BEARER)."
+    )
+
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -336,6 +356,7 @@ class KokoroGenerator:
         # to Comfy AUDIO
         audio = _wav_to_audio(bio, target_sr=target_sample_rate)
         return (audio,)
+
 
 
 NODE_CLASS_MAPPINGS = {
