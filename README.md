@@ -9,6 +9,9 @@ No ONNX downloads. Same nodes/UX as the original: **Kokoro Speaker**, **Kokoro S
 - Voice mixing: `speaker_a + speaker_b` (optionally pass weights if your server supports it)
 - Languages and speed forwarded to the API (ignored safely if unsupported)
 
+<img width="1425" height="604" alt="image" src="https://github.com/user-attachments/assets/162da51a-5775-4a24-ab94-54082b6b27d6" />
+
+
 ## Install
 1. Clone into `ComfyUI/custom_nodes/comfyui-kokoro-remote`
 2. `pip install -r requirements.txt`
