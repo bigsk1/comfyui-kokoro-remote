@@ -93,6 +93,22 @@ def _auth_headers():
         auth = HTTPBasicAuth(user, pwd)
     return headers, auth
 
+def _auto_lang_from_voice(voice_str: str, current_code: str) -> str:
+    # Use the first voice in a mix to infer language
+    first = _strip_paren(str(voice_str).split("+")[0]).strip()
+    prefix = first[:2].lower()
+    mapping = {
+        "af": "en-us", "am": "en-us",
+        "bf": "en-gb", "bm": "en-gb",
+        "jf": "ja",    "jm": "ja",
+        "zf": "cmn",   "zm": "cmn",
+        "hf": "hi",    "hm": "hi",
+        "if": "it",    "im": "it",
+        "pf": "pt-br", "pm": "pt-br",
+        # "ef","em","ff" are ambiguous in your pack; keep current_code
+    }
+    return mapping.get(prefix, current_code)
+
 def _post_tts(
     base_url: str,
     text: str,
@@ -121,7 +137,20 @@ def _post_tts(
     headers, auth = _auth_headers()
     r = requests.post(url, data=json.dumps(payload), headers=headers, auth=auth, timeout=timeout_s)
     r.raise_for_status()
-    return io.BytesIO(r.content)
+    
+    ct = (r.headers.get("Content-Type") or "").lower()
+    data = r.content
+    if (not data) or (len(data) < 64) or ("audio" not in ct and not ct.startswith("application/octet-stream")):
+        # Try to decode the server error so we can see what's wrong
+        try:
+            err = r.json()
+        except Exception:
+            try:
+                err = data[:400].decode("utf-8", "ignore")
+            except Exception:
+                err = f"<{len(data)} bytes>"
+        raise RuntimeError(f"Kokoro HTTP error (CT={ct}, bytes={len(data)}): {err}")
+    return io.BytesIO(data)
 
 def _wav_to_audio(bio: io.BytesIO, target_sr: int):
     with wave.open(bio, "rb") as w:
@@ -286,6 +315,11 @@ class KokoroGenerator:
         if supports_weights and isinstance(weights, list) and len(weights) == 2:
             w_a = float(weights[0])  # combiner gives [wA, 1-wA]
             voice_str = _encode_weighted_voice(voice, w_a)
+        
+        # auto-adjust lang_code from voice prefix when user left it as English*
+        if os.getenv("KOKORO_AUTO_LANG", "1") == "1":
+            if lang_code.startswith("en"):          # only override the English defaults
+                lang_code = _auto_lang_from_voice(voice_str, lang_code)
 
         # request TTS
         url_base = base_url or os.getenv("KOKORO_BASE_URL", "")
