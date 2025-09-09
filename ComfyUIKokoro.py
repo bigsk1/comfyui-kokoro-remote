@@ -7,6 +7,9 @@ import numpy as np
 import torch
 import requests
 from requests.auth import HTTPBasicAuth
+import re
+from fractions import Fraction
+
 
 # .env loader: first try CWD (ComfyUI root), then plugin-local .env
 try:
@@ -139,6 +142,32 @@ def _wav_to_audio(bio: io.BytesIO, target_sr: int):
     audio_tensor = torch.from_numpy(arr.astype(np.float32)).unsqueeze(0)  # [B=1, C=1, T]
     return {"waveform": audio_tensor, "sample_rate": int(cur_sr)}
 
+def _strip_paren(name: str) -> str:
+    # remove any trailing "(N)" from a voice name
+    return re.sub(r"\(\s*\d+\s*\)$", "", str(name).strip())
+
+def _ratio_from_weight(w: float, max_den: int = 10) -> tuple[int, int]:
+    # Convert 0..1 weight -> small integer ratio (a : b) with a+b <= ~max_den
+    w = max(0.0, min(1.0, float(w)))
+    frac = Fraction(w).limit_denominator(max_den)
+    a = frac.numerator
+    q = frac.denominator
+    b = max(1, q - a)  # ensure nonzero; extremes handled outside
+    return a, b
+
+def _encode_weighted_voice(voice: str, weight_a: float) -> str:
+    # "af_a+af_b" + weight_a -> "af_a(x)+af_b(y)" or single voice at extremes
+    parts = str(voice).split("+")
+    if len(parts) != 2:
+        return voice
+    va = _strip_paren(parts[0]); vb = _strip_paren(parts[1])
+    eps = 1e-4
+    if weight_a >= 1.0 - eps:
+        return va
+    if weight_a <= eps:
+        return vb
+    a, b = _ratio_from_weight(weight_a, max_den=10)
+    return f"{va}({a})+{vb}({b})"
 
 class KokoroSpeaker:
     @classmethod
@@ -183,7 +212,12 @@ class KokoroSpeakerCombiner:
             # guard against NoneType .get warnings
             return ({"voice": (va or vb or "af_sarah")},)
 
-        # pack weights; many servers treat "a+b" as 50/50, but we also pass explicit weights downstream
+        eps = 0.01
+        if weight >= 1.0 - eps:
+           return ({"voice": va},)
+        if weight <= eps:
+           return ({"voice": vb},)
+        # keep weights for the generator; voice string is plain here
         return ({"voice": f"{va}+{vb}", "weights": [float(weight), float(1.0 - weight)]},)
 
     @classmethod
@@ -206,10 +240,11 @@ class KokoroGenerator:
                 "base_url": ("STRING", {"default": os.getenv("KOKORO_BASE_URL", "http://localhost:8880")}),
                 "timeout_s": ("INT", {"default": int(os.getenv("KOKORO_TIMEOUT", "60"))}),
                 "target_sample_rate": ("INT", {"default": int(os.getenv("KOKORO_SAMPLE_RATE", "44100"))}),
-                # default ON; can be toggled or set via env
+                # default ON; toggle with env KOKORO_SUPPORTS_WEIGHTS=0 if your server doesn't support ratios
                 "supports_weights": ("BOOLEAN", {"default": os.getenv("KOKORO_SUPPORTS_WEIGHTS", "1") == "1"}),
             },
         }
+
     RETURN_TYPES = ("AUDIO",)
     RETURN_NAMES = ("audio",)
     FUNCTION = "generate"
@@ -217,32 +252,38 @@ class KokoroGenerator:
 
     def generate(self, text, speaker, speed, lang,
                  base_url=None, timeout_s=60, target_sample_rate=44100, supports_weights=False):
+        # pick voice + optional weights coming from the combiner
         voice = "af_sarah"
         weights = None
         if isinstance(speaker, dict):
             voice = speaker.get("voice", voice)
             weights = speaker.get("weights")
 
+        # map UI display -> lang code
         lang_code = supported_languages.get(lang) or "en-us"
 
-        # compute weights to send (or None)
-        payload_weights = None
+        # encode weights inside the voice string, e.g. "af_bella(2)+af_sky(1)"
+        voice_str = voice
         if supports_weights and isinstance(weights, list) and len(weights) == 2:
-            payload_weights = [float(weights[0]), float(weights[1])]
+            w_a = float(weights[0])  # combiner gives [wA, 1-wA]
+            voice_str = _encode_weighted_voice(voice, w_a)
 
+        # request TTS
         url_base = base_url or os.getenv("KOKORO_BASE_URL", "")
         bio = _post_tts(
             url_base,
             text,
-            voice,
+            voice_str,   # weighted string if applicable
             speed,
             lang_code,
             timeout_s,
-            weights=payload_weights, 
+            weights=None,  # server uses the string; leave None unless your API also reads JSON weights
         )
 
+        # to Comfy AUDIO
         audio = _wav_to_audio(bio, target_sr=target_sample_rate)
         return (audio,)
+
 
 NODE_CLASS_MAPPINGS = {
     "KokoroGenerator": KokoroGenerator,
