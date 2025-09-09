@@ -15,7 +15,7 @@
         "base_url": "",
         "timeout_s": 60,
         "target_sample_rate": 44100,
-        "supports_weights": false
+        "supports_weights": true
       }
     },
     "5": { "class_type": "PreviewAudio", "inputs": { "audio": ["4", 0] } }
