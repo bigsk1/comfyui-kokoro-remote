@@ -48,7 +48,7 @@ KOKORO_TIMEOUT=60
 KOKORO_SAMPLE_RATE=44100
 ```
 
-If you have a locally running Kokoro server with no auth just enter the url in the node one the workflow.
+If you have a locally running Kokoro server with no auth just enter the url in the node.
 
 ## Compatibility & “Missing Nodes” Guide
 
