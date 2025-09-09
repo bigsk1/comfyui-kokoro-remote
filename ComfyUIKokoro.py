@@ -71,18 +71,31 @@ def _auth_headers():
         auth = HTTPBasicAuth(user, pwd)
     return headers, auth
 
-def _post_tts(base_url: str, text: str, voice_str: str, speed: float, lang_code: str, timeout_s: int) -> io.BytesIO:
+def _post_tts(
+    base_url: str,
+    text: str,
+    voice_str: str,
+    speed: float,
+    lang_code: str,
+    timeout_s: int,
+    weights: list[float] | None = None,   # <-- NEW: accept weights from caller
+) -> io.BytesIO:
     url = _resolve_url(base_url)
     payload = {
         "model": "kokoro",
-        "voice": voice_str,       # "af_sky" or "af_sky+af_bella"
+        "voice": voice_str,        # "af_sky" or "af_sky+af_bella"
         "input": text,
-        "format": "wav",          # WAV for easy decode
+        "format": "wav",           # WAV for easy decode
         "response_format": "wav",
-        # The following are supported by some servers; safe to include if ignored
         "speed": float(speed),
-        "lang": lang_code or "en-us",
+        # send common variants; server will ignore what it doesn't use
+        "lang": (lang_code or "en-us"),
+        "language": (lang_code or "en-us"),
+        "lang_code": (lang_code or "en-us"),
     }
+    if isinstance(weights, list):
+        payload["weights"] = weights   # harmless if server ignores
+
     headers, auth = _auth_headers()
     r = requests.post(url, data=json.dumps(payload), headers=headers, auth=auth, timeout=timeout_s)
     r.raise_for_status()
@@ -167,16 +180,17 @@ class KokoroSpeakerCombiner:
         va = speaker_a.get("voice") if isinstance(speaker_a, dict) else None
         vb = speaker_b.get("voice") if isinstance(speaker_b, dict) else None
         if not va or not vb:
-            # fall back: pass through first
-            return ({"voice": va or vb or "af_sarah"},)
+            # guard against NoneType .get warnings
+            return ({"voice": (va or vb or "af_sarah")},)
 
-        # Most Kokoro HTTP servers accept "a+b" (50/50). Weighted mixing is server-dependent.
-        # We preserve the weight in the object for servers that support it via custom fields.
+        # pack weights; many servers treat "a+b" as 50/50, but we also pass explicit weights downstream
         return ({"voice": f"{va}+{vb}", "weights": [float(weight), float(1.0 - weight)]},)
 
     @classmethod
     def IS_CHANGED(cls, speaker_a, speaker_b, weight):
-        return hash((speaker_a.get("voice"), speaker_b.get("voice"), weight))
+        va = speaker_a.get("voice") if isinstance(speaker_a, dict) else None
+        vb = speaker_b.get("voice") if isinstance(speaker_b, dict) else None
+        return hash((va, vb, float(weight)))
 
 class KokoroGenerator:
     @classmethod
@@ -192,8 +206,8 @@ class KokoroGenerator:
                 "base_url": ("STRING", {"default": os.getenv("KOKORO_BASE_URL", "http://localhost:8880")}),
                 "timeout_s": ("INT", {"default": int(os.getenv("KOKORO_TIMEOUT", "60"))}),
                 "target_sample_rate": ("INT", {"default": int(os.getenv("KOKORO_SAMPLE_RATE", "44100"))}),
-                # If your server supports explicit mixing weights, set KOKORO_SUPPORTS_WEIGHTS=1
-                "supports_weights": ("BOOLEAN", {"default": os.getenv("KOKORO_SUPPORTS_WEIGHTS","0") == "1"}),
+                # default ON; can be toggled or set via env
+                "supports_weights": ("BOOLEAN", {"default": os.getenv("KOKORO_SUPPORTS_WEIGHTS", "1") == "1"}),
             },
         }
     RETURN_TYPES = ("AUDIO",)
@@ -209,20 +223,24 @@ class KokoroGenerator:
             voice = speaker.get("voice", voice)
             weights = speaker.get("weights")
 
-        # Convert display -> code just like original
         lang_code = supported_languages.get(lang) or "en-us"
 
-        # Build voice string; optionally include weights if your API supports it
-        voice_str = voice
+        # compute weights to send (or None)
         payload_weights = None
         if supports_weights and isinstance(weights, list) and len(weights) == 2:
             payload_weights = [float(weights[0]), float(weights[1])]
 
-        # Make request
         url_base = base_url or os.getenv("KOKORO_BASE_URL", "")
-        bio = _post_tts(url_base, text, voice_str, speed, lang_code, timeout_s)
+        bio = _post_tts(
+            url_base,
+            text,
+            voice,
+            speed,
+            lang_code,
+            timeout_s,
+            weights=payload_weights, 
+        )
 
-        # Decode + shape to Comfy AUDIO
         audio = _wav_to_audio(bio, target_sr=target_sample_rate)
         return (audio,)
 
