@@ -9,7 +9,7 @@ No ONNX downloads. Nodes/UX: **Kokoro Speaker**, **Kokoro Speaker Combiner**, **
 - Voice mixing: `speaker_a + speaker_b`
 - Languages and speed forwarded to the API (ignored safely if unsupported)
 
-<img width="950" height="440" alt="image" src="https://github.com/user-attachments/assets/162da51a-5775-4a24-ab94-54082b6b27d6" />
+<img width="950" height="440" alt="kokoro-remote" src="https://github.com/user-attachments/assets/162da51a-5775-4a24-ab94-54082b6b27d6" />
 
 
 ## Install (Manual)
@@ -49,6 +49,10 @@ KOKORO_SAMPLE_RATE=44100
 ```
 
 If you have a locally running Kokoro server with no auth just enter the url in the node.
+
+
+<img width="950" height="480" alt="kokoro-remote2" src="https://github.com/user-attachments/assets/f7739415-6bf7-4033-b7bd-229963516cb6" />
+
 
 ## Compatibility & “Missing Nodes” Guide
 
