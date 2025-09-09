@@ -5,9 +5,9 @@ import folder_paths  # provided by ComfyUI
 
 class SaveAudioPathWAV:
     DESCRIPTION = (
-        "Writes the AUDIO stream to a .wav file and returns its path.\n"
-        "Use this to commit a take, then point Load Audio (Path) at the fixed file.\n"
-        "Handy for voice audition → save → full video run."
+        "Write AUDIO to .wav and return its path.\n"
+        "To save ONLY the audio without running the rest of your workflow: "
+        "right-click this node → 'Queue selected output nodes'."
     )
 
     @classmethod

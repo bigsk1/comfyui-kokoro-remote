@@ -249,7 +249,7 @@ class KokoroSpeakerCombiner:
         "• Middle values encode a ratio for servers that support it (e.g., af_a(2)+af_b(1)).\n"
         "Avoid cross-language mixes (e.g., English+Mandarin)."
     )
-    
+
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -287,12 +287,14 @@ class KokoroSpeakerCombiner:
 
 class KokoroGenerator:
     DESCRIPTION = (
-        "Remote Kokoro TTS generator (HTTP).\n"
-        "• Preview: click ▶ on a PreviewAudio node wired to this output to audition voices.\n"
-        "• Commit: run SaveAudioPath (WAV) to write a file, then run your full workflow.\n"
-        "• Mixing: weight=1 → only A, weight=0 → only B, middle → A+B (uses ratio string like af_a(2)+af_b(1)).\n"
-        "• Tip: American+British mix is OK; avoid cross-language mixes (e.g. English+Mandarin) unless your server supports it.\n"
-        "• Auth/Base URL can come from .env (KOKORO_BASE_URL, KOKORO_USERNAME/PASSWORD or KOKORO_BEARER)."
+        "Remote Kokoro TTS (HTTP).\n"
+        "• Preview WITHOUT running the whole graph: right-click a PreviewAudio node wired here and choose "
+        "'Queue selected output nodes'.\n"
+        "• Commit a take WITHOUT running the rest: right-click SaveAudioPath (WAV) → 'Queue selected output nodes'.\n"
+        "• Note: clicking the green ▶ on a node will execute downstream nodes.\n"
+        "• Mixing: weight=1 → A only, 0 → B only, middle → A+B (ratio string like af_a(2)+af_b(1)).\n"
+        "• Tip: American↔British mixes are OK; avoid cross-language mixes unless your server supports them.\n"
+        "• Auth/Base URL: .env (KOKORO_BASE_URL, KOKORO_USERNAME/PASSWORD or KOKORO_BEARER)."
     )
 
     @classmethod
