@@ -39,20 +39,39 @@ supported_languages = {
 
 supported_voices = [
     # American Female
-    "af_heart","af_alloy","af_aoede","af_bella","af_jessica","af_kore","af_nicole","af_nova","af_river","af_sarah","af_sky",
+    "af_alloy","af_aoede","af_bella","af_heart","af_jadzia","af_jessica","af_kore",
+    "af_nicole","af_nova","af_river","af_sarah","af_sky",
+    # American Female (v0 variants)
+    "af_v0","af_v0bella","af_v0irulan","af_v0nicole","af_v0sarah","af_v0sky",
+
     # American Male
     "am_adam","am_echo","am_eric","am_fenrir","am_liam","am_michael","am_onyx","am_puck","am_santa",
+    # American Male (v0 variants)
+    "am_v0adam","am_v0gurney","am_v0michael",
+
     # British Female
-    "bf_alice","bf_emma","bf_isabella","bf_lily",
+    "bf_alice","bf_emma","bf_lily",
+    # British Female (v0 variants)
+    "bf_v0emma","bf_v0isabella",
+
     # British Male
     "bm_daniel","bm_fable","bm_george","bm_lewis",
+    # British Male (v0 variants)
+    "bm_v0george","bm_v0lewis",
+
     # Japanese Female
     "jf_alpha","jf_gongitsune","jf_nezumi","jf_tebukuro",
     # Japanese Male
     "jm_kumo",
-    # Chinese (Z?) + misc
-    "zf_xiaobei","zf_xiaoni","zf_xiaoxiao","zf_xiaoyi","zm_yunjian","zm_yunxi","zm_yunxia","zm_yunyang",
-    "ef_dora","em_alex","em_santa","ff_siwis","hf_alpha","hf_beta","hm_omega","hm_psi","if_sara","im_nicola","pf_dora","pm_alex","pm_santa",
+
+    # Chinese Female
+    "zf_xiaobei","zf_xiaoni","zf_xiaoxiao","zf_xiaoyi",
+    # Chinese Male
+    "zm_yunjian","zm_yunxi","zm_yunxia","zm_yunyang",
+
+    # Other / International packs
+    "ef_dora","em_alex","em_santa","ff_siwis","hf_alpha","hf_beta",
+    "hm_omega","hm_psi","if_sara","im_nicola","pf_dora","pm_alex","pm_santa",
 ]
 
 # ----- helpers -----
