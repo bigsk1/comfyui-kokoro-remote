@@ -1,0 +1,46 @@
+{
+    "1": {
+      "class_type": "KokoroSpeaker",
+      "inputs": { "speaker_name": "af_sarah" }
+    },
+    "2": {
+      "class_type": "KokoroGenerator",
+      "inputs": {
+        "text": "What the heck man?",
+        "speaker": ["1", 0],
+        "speed": 1.0,
+        "lang": "English",
+        "base_url": "",
+        "timeout_s": 60,
+        "target_sample_rate": 44100,
+        "supports_weights": true
+      }
+    },
+    "3": {
+      "class_type": "PreviewAudio",
+      "inputs": { "audio": ["2", 0] }
+    },
+    "4": {
+      "class_type": "SaveAudioPathWAV",
+      "inputs": {
+        "audio": ["2", 0],
+        "filename_prefix": "kokoro",
+        "subfolder": "kokoro-tts"
+      }
+    },
+    "5": {
+      "class_type": "StringGate",
+      "inputs": {
+        "text": ["4", 1],
+        "enabled": false
+      }
+    },
+    "6": {
+      "class_type": "SaveAudio",
+      "inputs": {
+        "audio": ["2", 0],
+        "filename_prefix": "audio/ComfyUI"
+      }
+    }
+  }
+  

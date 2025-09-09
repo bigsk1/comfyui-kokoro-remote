@@ -18,7 +18,8 @@ class SaveAudioPathWAV:
     RETURN_NAMES = ("audio", "audio_path")
     FUNCTION = "save"
     OUTPUT_NODE = True
-    CATEGORY = "kokoro-remote/io"
+    CATEGORY = "kokoro"
+
 
     def save(self, audio, filename_prefix, subfolder=""):
         outdir = folder_paths.get_output_directory()
